@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <div id="title"></div>
+    <div id="msgPane"></div>
+    <ul id="users"></ul>
+    <textarea id="area"></textarea>
+    <input type="text" id="nameInput">
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      console.log('loaded');
+      var socket = io.connect('192.168.0.19') 
+        , doc = document
+        , area = doc.getElementById('area')
+        , nameInput = doc.getElementById('nameInput')
+        , msgPane = doc.getElementById('msgPane')
+        , title = doc.getElementById('title')
+        , users = doc.getElementById('users')
+        , name = "Anonymous"
+        ;
+      
+      if('geolocation' in navigator){
+        navigator.geolocation.getCurrentPosition(
+             sendPos
+            ,sendSF
+            ,{timeout:10000}
+            )
+      }else{
+        sendSF();
+      }
+      
+      socket.on('msg', addMsg);
+
+      socket.on('join',function(data){
+        console.log(data)
+      });
+
+      socket.on('leave',function(data){
+        console.log(data)
+      });
+     
+      socket.on('name',addText);
+
+      socket.on('room', populate);
+      
+      socket.on('noroom', roomPrompt);
+      
+
+      function populate(data){
+        var frag = doc.createDocumentFragment(); 
+        window.history.pushState(null,null,data._id);
+        title.textContent = data.nm + " - " + data.ct;
+        addUsers(data.usrs, frag)
+        users.appendChild(frag);  
+      }
+      
+      function addUser(name, id, parent){
+        var li=doc.createElement(li);
+        li.id=id;
+        li.textContent=name;
+        parent.appendChild(li);
+      }
+      
+      function addUsers(users, parent){
+        for (var i=0,j=users.length; i<j; i++){
+          addUser(users[i].name, users[i].id, parent);
+        }
+      }
+
+      function roomPrompt(){}    
+
+      area.onkeyup = function(e){
+        e = e || event;
+        if (e.keyCode === 13 && !e.shiftKey) {
+          socket.emit('msg', this.value,name);
+          addMsg(this.value,"Me");
+          this.value = '';
+        }
+      }
+      nameInput.onkeyup = function(e){
+        e = e || event;
+        if (e.keyCode === 13) {
+          name=this.value;
+          socket.emit("name",name);
+          this.value = '';
+        }
+      } 
+      function addMsg(msg,user){
+        return addText(user+": "+msg)
+      }
+
+      function addText(txt){
+        var p = doc.createElement('p')
+        p.innerText = txt;
+        msgPane.appendChild(p);
+        return p;
+      }
+
+
+      function sendSF(){
+        socket.emit('loc',"-122.4087,37.7810")
+      }
+            
+      function sendPos(pos){
+        var coords = pos.coords;
+        socket.emit('loc',coords.longitude+','+coords.latitude)
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+Open, get pulled into nearby room, instantly see conversation and choose your name.
+Other rooms list (miles away), create room
+pm people
+user list in the room
+(idle people, etc)
+
+
+Open page, bootstrap front end and get user's location
+
+
+Attach socket and emit user's location 
+(or Immediately fire off xhr with location (get localhost/:coords))
+
+Generate user ID:
+function genId(e){
+  return Math.random()
+}  //note that this is ~17 digits of randomness. With ~10k concurrent users,
+   //odds of repeat is vanishingly small. Keep it as a number. 500x faster than generating 6 p.random bytes
+route this request to a db which finds its 'room'
+rooms have x,y, id, name, and user list( ids and names), nearest city name
+then attach message/join/leave handlers
+
+Assigning user to chatroom:::::!::!:
+  Have indexes on x and y
+  Search for rooms with coord.x-0.5mi<x<coord.x+0.5mi and y
+  
+  {"x":{$gte:coord.x-XSTEP,$lte:coord.x+XSTEP},"y":{$gte:coord.y-YSTEP,$lte:coord.y+YSTEP}}
+
+  If miss step up exponentially, to a cutoff of... some amount. "No rooms near you. Create your own, look farther"
+     **Note I will need to name nearest town**
+  On the result set, find the closest match and insert the user
+  into that document
+  Return the room name for attaching the socket, and an array of the other close rooms that were found, so ther user can browse/switch. The user will be able to (*search for more rooms* to get a larger list);)
+
+Add an "invite to this room" feature where a hyperlink get sent.. representing the chatrooms id! So a request to speakup.com/1231023832 will put a user directly in that chatroom... This makes me feel like I should manage the user history as well. When the user enters a chatroom, add the chatid to the url with history api
+
+

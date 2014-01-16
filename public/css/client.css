@@ -1,0 +1,16 @@
+#msgPane{
+  background-color:#7697ba;
+  line-height:1.4em;
+}
+#area{
+  width:80%;
+  height:120px;
+}
+.user{
+  color:#eee;
+  font-weight:500;
+  font-family:Helvetica;
+}
+.isMe{
+  color:#222;
+}
